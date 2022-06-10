@@ -1,5 +1,4 @@
-
-Docker compose for rtty and rttys.  
+# Docker compose for rtty and rttys
 
 ## Start the containers (client and server)
 ```
