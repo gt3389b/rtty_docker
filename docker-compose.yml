@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+
+  rtty:
+    container_name: rtty
+    build: rtty_client
+    networks:
+      - network
+    command: ["rtty", "-I", "docker_test_client", "-h", "rttys", "-t", "root"]
+    networks:
+      - network
+
+  rttys:
+    container_name: rttys
+    image: "rttys"
+    ports:
+      - "5913:5913" 
+      - "5912:5912"
+    networks:
+      - network
+
+networks:
+  # Declare our private network.  We must declare one for the magic
+  # Docker DNS to work, but otherwise its default settings are fine.
+  network: {}
