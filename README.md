@@ -5,7 +5,7 @@
 docker-compose up
 ```
 
-## Register a user, loging, View the device, and launch a shell
+## Web UI: Register a user, loging, View the device, and launch a shell
 ```
 http://localhost:5913/
 ```
