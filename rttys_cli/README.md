@@ -13,5 +13,5 @@ npm run build
 
 ## Connect to e45f01ace467
 ```
-./rttys_cli -d "e45f01ace467" -s rtts -p 5913 -u admin -w admin 
+./rttys_cli -d "e45f01ace467" -s rttys -p 5913 -u admin -w admin 
 ```
