@@ -9,3 +9,6 @@ docker-compose up
 ```
 http://localhost:5913/
 ```
+
+## RTTYS Commandline Interface
+[README for the RTTYS CLI](rttys_cli/README.md)
