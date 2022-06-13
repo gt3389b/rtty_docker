@@ -118,6 +118,51 @@ let get_sid = function(hostname, port, username, password, cb) {
 /**************************************/
 /**                                 ***/
 /**                                 ***/
+/**    Execute a command            ***/
+/**                                 ***/
+/**                                 ***/
+/**************************************/
+let do_command = function(hostname, port, sid, did, username, password, cmd, params, cb) {
+   const data = JSON.stringify({
+      username:username, 
+      password:password,
+      cmd:cmd,
+      params:JSON.parse(params),
+   });
+
+   const options = {
+      hostname: hostname,
+      port: port,
+      path: '/cmd/'+did+"?wait=30",
+      method: 'POST',
+      headers: { 'Cookie': 'sid='+sid },
+   };
+
+   const req = http.request(options, res => {
+      if (res.statusCode == 200) {
+         res.on('data', d => {
+            cb(JSON.parse(d));
+         });
+      }
+      else {
+         console.error("ERROR DO CMD: ", res.statusCode, res.statusMessage);
+         process.exit();
+      }
+   });
+
+   req.on('error', error => {
+      console.error("ERROR DO CMD: ", error);
+      process.exit();
+   });
+
+   req.write(data);
+   req.end();
+}
+
+
+/**************************************/
+/**                                 ***/
+/**                                 ***/
 /**    Let's get the device list    ***/
 /**                                 ***/
 /**                                 ***/
@@ -159,16 +204,30 @@ parser.add_argument('-v', '--version', { action: 'version', version });
 parser.add_argument('-l', '--list', { help: 'List available devices', action:'store_true' });
 parser.add_argument('-s', '--server_name', { help: 'RTTYS hostname' });
 parser.add_argument('-p', '--port', { type: "int", help: 'RTTYS port' });
-parser.add_argument('-u', '--username', { help: 'Username' });
-parser.add_argument('-w', '--password', { help: 'Password' });
+parser.add_argument('-u', '--rtty_username', { help: 'RTTYS Username' });
+parser.add_argument('-w', '--rtty_password', { help: 'RTTYS Password' });
+parser.add_argument('-x', '--device_username', { help: 'Device Username' });
+parser.add_argument('-y', '--device_password', { help: 'Device Password' });
 parser.add_argument('-d', '--device_id', { help: 'Device ID' });
+parser.add_argument('-c', '--command', { help: 'Command to execute' });
+parser.add_argument('-r', '--params', { help: 'Command params', default:""});
 
 let args = parser.parse_args();
-get_sid(args.server_name, args.port, args.username, args.password, function(sid) {
+get_sid(args.server_name, args.port, args.rtty_username, args.rtty_password, function(sid) {
    if (args['list'] == true) {
       list_devices(args.server_name, args.port, sid, function(devs){
          console.log(JSON.stringify(devs));
          process.exit();
+      });
+   } else if (args.command) {
+      do_command(args.server_name, args.port, sid, args.device_id, args.device_username, args.device_password, args.command, args.params, function(result){
+         if (result.msg == "operation not permitted") {
+            console.log(JSON.stringify(result));
+            process.exit();
+         } else {
+            console.log(JSON.stringify(result));
+            process.exit();
+         }
       });
    } else {
       // got sid, now let's connect

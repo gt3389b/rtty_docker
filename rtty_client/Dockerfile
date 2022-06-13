@@ -9,6 +9,7 @@ RUN \
 WORKDIR /
 
 RUN usermod --unlock root
+RUN usermod -p `openssl passwd -1 root` root
 
 RUN cd /build && \
     git clone --recursive https://github.com/zhaojh329/rtty.git && \

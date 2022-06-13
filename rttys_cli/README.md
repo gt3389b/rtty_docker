@@ -15,3 +15,8 @@ npm run build
 ```
 ./rttys_cli -d "e45f01ace467" -s rttys -p 5913 -u admin -w admin 
 ```
+
+## Send a command to 
+```
+./rttys_cli -d "e45f01ace467" -s $HOST -p 5913 -u admin -w admin -c 'ls' -r '["-la"]' -x root  -y root | jq ".stdout" | tr -d "\"" | base64 -d
+```
