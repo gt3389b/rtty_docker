@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "pkg index.js -o rttys_cli",
+    "build": "pkg index.js --options no-warnings -o rttys_cli",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
