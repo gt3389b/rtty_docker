@@ -6,18 +6,26 @@ services:
     build: rtty_client
     networks:
       - network
-    command: ["rtty", "-I", "docker_test_client", "-h", "rttys", "-t", "root"]
+    command: ["rtty", "-s", "-I", "docker_test_client", "-f", "root", "-C", "/etc/rtty/rttys.ca", "-h", "rttys", "-t", "0bc51b8495a39d6b8bcfc149deac5289", "-a", "-c", "/etc/rtty/rtty.crt", "-k", "/etc/rtty/rtty.key"]
+    volumes:
+      - ./certs:/etc/rtty
     networks:
       - network
 
   rttys:
     container_name: rttys
-    image: "rttys"
-    ports:
-      - "5913:5913" 
-      - "5912:5912"
+    build: rttys
+    ports: 
+      - 5913:5913
+      - 5912:5912
+    environment:
+      - RTTYS_TOKEN=0bc51b8495a39d6b8bcfc149deac5289
+    volumes:
+      - ./certs:/etc/rttys:ro
+      - /etc/localtime:/etc/localtime:ro
     networks:
       - network
+
 
 networks:
   # Declare our private network.  We must declare one for the magic

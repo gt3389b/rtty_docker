@@ -6,9 +6,9 @@ fi
 
 # Generate config file
 echo "token: ${RTTYS_TOKEN}" >> /etc/rttys.conf
-echo "ssl-cacert: /rttys/ca.crt" >> /etc/rttys.conf
-echo "ssl-cert: /rttys/rttys.crt" >> /etc/rttys.conf
-echo "ssl-key: /rttys/rttys.key" >> /etc/rttys.conf
+echo "ssl-cacert: /etc/rttys/rttys.ca" >> /etc/rttys.conf
+echo "ssl-cert: /etc/rttys/rtty.crt" >> /etc/rttys.conf
+echo "ssl-key: /etc/rttys/rtty.key" >> /etc/rttys.conf
 
 cat /etc/rttys.conf
 

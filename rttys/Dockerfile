@@ -18,15 +18,11 @@ COPY --from=rttys /rttys-build/rttys /usr/bin/rttys
 RUN apk update && apk upgrade
 RUN apk add --no-cache sqlite
 
-ENV RTTYS_USERNAME="admin"
-ENV RTTYS_PASSWORD="admin"
 ENV RTTYS_TOKEN=""
 
 EXPOSE 5912 5913
 
+COPY rttys.db /
 COPY entrypoint.sh /
-COPY ca.crt /rttys/ca.crt
-COPY server.crt /rttys/rttys.crt
-COPY server.key /rttys/rttys.key
 RUN chmod u+x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
