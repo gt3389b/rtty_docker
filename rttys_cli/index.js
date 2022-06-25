@@ -257,9 +257,9 @@ get_sid(args.server_name, args.port, args.rttys_username, args.rttys_password, f
       });
    } else if (args['subparser_name'] == 'connect') {
       // got sid, now let's connect
-      const url = "ws:///"+args.server_name+":"+args.port+"/connect/"+args.device_id;
+      //const url = "ws://"+args.server_name+":"+args.port+"/connect/"+args.device_id;
+      const url = "wss://"+args.server_name+":"+args.port+"/connect/"+args.device_id;
       connect(url, {
-         transports: ['websocket'],
          headers: {
             Cookie: 'sid='+sid
          }

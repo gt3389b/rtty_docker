@@ -13,7 +13,7 @@ npm run build
 
 ## Connect to e45f01ace467
 ```
-./rttys_cli -d "e45f01ace467" -s localhost -p 5913 -u admin -w admin 
+./rttys_cli -s localhost -p 5913 -u admin -w admin connect -d "docker_test_client"
 ```
 
 ## Send a command to 
