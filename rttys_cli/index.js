@@ -6,174 +6,11 @@ const { version } = require('./package.json');
 const http = require('https');
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 const WebSocket = require('ws');
+const connect = require('./connect.js');
 const fs = require('fs');
 var timeout = 10; // seconds
 
 const casigningcert = new Buffer.from("LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUQrekNDQXVPZ0F3SUJBZ0lVVi8weEV1ZkhPQnlRUkJJWFQzS0JkVmNZUUF3d0RRWUpLb1pJaHZjTkFRRUwKQlFBd2dZd3hDekFKQmdOVkJBWVRBbFZUTVJBd0RnWURWUVFJREFkSFpXOXlaMmxoTVE4d0RRWURWUVFIREFaQwpkV1p2Y21ReEVqQVFCZ05WQkFvTUNWTjVibUZ0WldScFlURU5NQXNHQTFVRUN3d0VaVkpFU3pFVk1CTUdBMVVFCkF3d01ZMkV1Ykc5allXeG9iM04wTVNBd0hnWUpLb1pJaHZjTkFRa0JGaEY0ZVhwQWMzbHVZVzFsWkdsaExtTnYKYlRBZUZ3MHlNakEyTVRNeE56UTBNelJhRncwME9URXdNamd4TnpRME16UmFNSUdNTVFzd0NRWURWUVFHRXdKVgpVekVRTUE0R0ExVUVDQXdIUjJWdmNtZHBZVEVQTUEwR0ExVUVCd3dHUW5WbWIzSmtNUkl3RUFZRFZRUUtEQWxUCmVXNWhiV1ZrYVdFeERUQUxCZ05WQkFzTUJHVlNSRXN4RlRBVEJnTlZCQU1NREdOaExteHZZMkZzYUc5emRERWcKTUI0R0NTcUdTSWIzRFFFSkFSWVJlSGw2UUhONWJtRnRaV1JwWVM1amIyMHdnZ0VpTUEwR0NTcUdTSWIzRFFFQgpBUVVBQTRJQkR3QXdnZ0VLQW9JQkFRQ2hSck1iL2RnMUh4ZmtjeUhpcklMQ0VLNkNCWXRpSC9ueERwQU5rWG90CmtZdCtlYVJmUG9aazM0WTZpWWxlTDNjZjRtU21FbzlaWVl2c3FQS1pmZ0tEQk54bHI2dm9pQWtuSWF6ZFFNaFkKMktwdG1tTk1FbHZsOUpRT1VMRFRMaERJOUErOWppbm00U3gxNFdMV0xIYU9Mbk9kNTUwV0U2QWlBTXNQdHhLNwp1L3NIcUV6YXhBSGZFVDJqYjNFTVZPSmgwdmcrbXJMYlMzZU03WXdyVWVOTm42SUFJdHhTUHYrODdlNVpDYkVPCkYyS1RDd1AyOVdkK3B4bXhwdURONUo0eFhjVktTeENWNjZJRUgyakR4TkRrc3E4dGl3SGJNTHlJaytsNHlnR3EKTjRPd2gvbXdGZzFjTjZSVlBOYXJuUlRRNktudHpEcE5NanJkOCtyenR6QmxBZ01CQUFHalV6QlJNQjBHQTFVZApEZ1FXQkJSSUpxNC9obk51aVZEZzZ1M1NyeVh1bmRRTzdqQWZCZ05WSFNNRUdEQVdnQlJJSnE0L2huTnVpVkRnCjZ1M1NyeVh1bmRRTzdqQVBCZ05WSFJNQkFmOEVCVEFEQVFIL01BMEdDU3FHU0liM0RRRUJDd1VBQTRJQkFRQXAKSlNTZHJJT1BsQ2RVaHk0SlZKeTJ5ZUFsY0ZlU3dncjJ5MUtjVlcxMml2cFUyMWorN2RjWEJkRDQ0Q0lwVllvZQp3amZXTHJ2RUZVcmNleXZtV3pSUFdxSkhrYlVYNEU1ZHJlZjBDVGdWTDBaM1NMY00xbUg0RExuejlFSmRXaHVRCklnM0hFaDVIL3pGY3hJMTZJVmNGTWR2d1BrVnVySUlLcm81akxQZTRuWmdjYjRWbnhvZU5jcUt2OG1jZ3hrMDUKa05mdDVZRG9HNUFmV1Nqekp4Q1k4TkFzYW1WajZpZkhtMzhpajF1dlhqMnoxcXRBazZIOVp2eFp4aEhUSzZ4ZApralA5eFU2M0t6K2cvK21SRi9JQXRsNndkck1JUG9HOFhieVl3aCtNbUsvdklBaVdPQmJPS0VXVlI1ckRVenZ3CjIwNklGblZzdVJ3U2xzUWdOYndvCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K", "base64");
-
-// This sends us each key press
-process.stdin.setRawMode( true );
-
-// resume stdin in the parent process (node app won't quit all by itself unless an error or process.exit() happens)
-process.stdin.resume();
-
-// Specify string encoding
-process.stdin.setEncoding( 'utf8' );
-
-let isJson = function(str) {
-    try {
-        JSON.parse(str);
-    } catch (e) {
-        return false;
-    }
-    return true;
-}
-
-
-
-let get_file = function(hostname, port, sid, cb) {
-   const options = {
-      hostname: hostname,
-      port: port,
-      path: '/file/'+sid,
-      method: 'GET'
-   };
-
-   let result = ""
-   const req = http.request(options, res => {
-      if (res.statusCode == 200) {
-         res.on('data', d => {
-            result += d;
-         });
-         res.on('end', d => {
-            cb(result);
-         });
-      }
-      else {
-         console.error("ERROR DO CMD: ", res.statusCode, res.statusMessage);
-         process.exit();
-      }
-   });
-
-   req.on('error', error => {
-      console.error("ERROR DO CMD: ", error);
-      process.exit();
-   });
-
-   req.end();
-}
-
-/**************************************/
-/**                                 ***/
-/**                                 ***/
-/**    Let's connect to the rttys   ***/
-/**                                 ***/
-/**                                 ***/
-/**************************************/
-let connect = function(address, protocols, options) {
-   let ws = new WebSocket(address, protocols, options);
-   let timerTimeout = setTimeout(() => ws.terminate(), timeout * 1000); // force close unless cleared on 'open'
-   let count = 0;
-   let sid = null;
-   ws.on('open', () => {
-      clearTimeout(timerTimeout);
-   });
-
-   // Send key input to WS
-   process.stdin.on( 'data', function( key ){
-      if ( key === '\u0003' ) {
-         process.exit();
-      }
-      ws.send(Buffer.from(key.toString(), 'utf16le').swap16());
-   });
-
-   ws.on('message', ev => { 
-      const LoginErrorOffline = 0x01;
-      const LoginErrorBusy = 0x02;
-      const MsgTypeFileData = 0x03;
-      const ReadFileBlkSize = 16 * 1024;
-      const AckBlkSize = 4 * 1024;
-      let data = ev.toString();
-
-      if (data[0] == '{') {
-        const msg = JSON.parse(data);
-        if (msg.type === 'login') {
-           if (msg.err === LoginErrorOffline) {
-            this.$Message.error(this.$t('Device offline').toString());
-            this.$router.push('/');
-            return;
-          } else if (msg.err === LoginErrorBusy) {
-            this.$Message.error(this.$t('Sessions is full').toString());
-            this.$router.push('/');
-            return;
-          }
-          console.log("SID: ",msg.sid);
-          sid = msg.sid;
-           /* TODO:  update fontsize 
-          this.axios.get('/fontsize').then(r => {
-            this.term.setOption('fontSize', r.data.size);
-            this.fitTerm();
-          });
-          */
-        } else if (msg.type === 'sendfile') {
-           console.log(msg)
-           fs.open("/tmp/"+msg.name, 'w', function(err, fd) {
-               if (err) {
-                  throw 'could not open file: ' + err;
-               }
-               get_file("localhost", 5913, sid, function(buffer) {
-                  fs.write(fd, buffer, buffer.length, function(err) {
-                     if (err) throw 'error writing file: ' + err;
-                     fs.close(fd);
-                  });
-               })
-           })
-        } else if (msg.type === 'recvfile') {
-            const msg = {type: 'fileInfo', size: 5, name: "TEST"};
-            ws.send(JSON.stringify(msg));
-
-            data = "TEST\0";
-            const buf = new Array();
-            buf.push(Buffer.from([1, MsgTypeFileData]));
-            if (data !== null)
-            buf.push(Buffer.from(data));
-            ws.send(Buffer.concat(buf));
-
-        } else if (msg.type === 'fileAck') {
-           console.log(msg)
-        } else {
-         count += data.length;
-         process.stdout.write(typeof(data) === 'string' ? data : new Uint8Array(data));
-         if (count > AckBlkSize) {
-            const msg = {type: 'ack', ack: count};
-            ws.send(JSON.stringify(msg));
-            count = 0;
-         }
-        }
-      } else {
-         count += data.length;
-         process.stdout.write(typeof(data) === 'string' ? data : new Uint8Array(data));
-         if (count > AckBlkSize) {
-            const msg = {type: 'ack', ack: count};
-            ws.send(JSON.stringify(msg));
-            count = 0;
-         }
-      }
-   });
-
-   ws.on('close', () => {
-      clearTimeout(timerTimeout);
-      console.log('\x1b[41m%s\x1b[0m', "<connection broken>");  
-      process.exit();
-   });
-   ws.on('error', reason => {
-      clearTimeout(timerTimeout);
-      console.error('Websocket error: ' + reason.toString())
-      process.exit();
-   });
-   return ws;
-}
-
 
 /**************************************/
 /**                                 ***/
@@ -331,10 +168,14 @@ parser_command.add_argument('-r', '--params', { help: 'Command params', default:
 let parser_list = subparsers.add_parser('list', {help:'List available devices'})
 
 // create the parser for the "put_file" command
-let parser_put_file = subparsers.add_parser('put', {help:'Put a file on the device'})
+let parser_put_file = subparsers.add_parser('put', {help:'Send a file to the device'})
+parser_put_file.add_argument('-d', '--device_id', { help: 'Device ID' });
+parser_put_file.add_argument('-f', '--filename', { help: 'Filename to send' });
 
 // create the parser for the "get_file" command
-let parser_get_file = subparsers.add_parser('get', {help:'Get a file from the device'})
+let parser_get_file = subparsers.add_parser('get', {help:'Receive a file from the device'})
+parser_get_file.add_argument('-d', '--device_id', { help: 'Device ID' });
+parser_get_file.add_argument('-f', '--filename', { help: 'Filename to send' });
 
 let parser_connect = subparsers.add_parser('connect', {help:'Connect to a device'})
 parser_connect.add_argument('-d', '--device_id', { help: 'Device ID' });
@@ -362,7 +203,7 @@ get_sid(args.server_name, args.port, args.rttys_username, args.rttys_password, f
       //const protocol = (location.protocol === 'https:') ? 'wss://' : 'ws://';
       //const url = "ws://"+args.server_name+":"+args.port+"/connect/"+args.device_id;
       const url = "wss://"+args.server_name+":"+args.port+"/connect/"+args.device_id;
-      connect(url, {
+      connect.connect(url, {
          headers: {
             Cookie: 'sid='+sid
          }
