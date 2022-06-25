@@ -43,8 +43,6 @@ let isJson = function(str) {
 /**                                 ***/
 /**************************************/
 let send_file = function(ws, pathname, filename, cb) {
-
-
    fs.stat(pathname, function (error, stats) {
       console.log(stats.size);
 
@@ -90,8 +88,6 @@ let send_file = function(ws, pathname, filename, cb) {
          readNextChunk();
       });
    });
-
-
 }
 
 /**************************************/
@@ -149,7 +145,7 @@ let download_file = function(hostname, port, sid, pathname, cb) {
 /**    Let's connect to the rttys   ***/
 /**                                 ***/
 /**************************************/
-exports.connect = function(address, protocols, options) {
+exports.connect = function(address, protocols, options, mode) {
    let ws = new WebSocket(address, protocols, options);
    let timerTimeout = setTimeout(() => ws.terminate(), timeout * 1000); // force close unless cleared on 'open'
    let count = 0;
@@ -158,13 +154,16 @@ exports.connect = function(address, protocols, options) {
       clearTimeout(timerTimeout);
    });
 
-   // Send key input to WS
-   process.stdin.on( 'data', function( key ){
-      if ( key === '\u0003' ) {
-         process.exit();
-      }
-      ws.send(Buffer.from(key.toString(), 'utf16le').swap16());
-   });
+   // we're in console mode so redirect stdin
+   if (mode == 'console') {
+      // Send key input to WS
+      process.stdin.on( 'data', function( key ){
+         if ( key === '\u0003' ) {
+            process.exit();
+         }
+         ws.send(Buffer.from(key.toString(), 'utf16le').swap16());
+      });
+   }
 
    ws.on('message', ev => { 
       let data = ev.toString();
@@ -179,14 +178,8 @@ exports.connect = function(address, protocols, options) {
             console.log('Sessions is full');
             return;
           }
-          //console.log("SID: ",msg.sid);
+         // TODO:  update fontsize 
           sid = msg.sid;
-           /* TODO:  update fontsize 
-          this.axios.get('/fontsize').then(r => {
-            this.term.setOption('fontSize', r.data.size);
-            this.fitTerm();
-          });
-          */
         } else if (msg.type === 'sendfile') {
            download_file("localhost", 5913, sid, "/tmp/"+msg.name, function() {})
         } else if (msg.type === 'recvfile') {
@@ -194,21 +187,27 @@ exports.connect = function(address, protocols, options) {
         } else if (msg.type === 'fileAck') {
            console.log(msg)
         } else {
-         count += data.length;
-         process.stdout.write(typeof(data) === 'string' ? data : new Uint8Array(data));
-         if (count > AckBlkSize) {
-            const msg = {type: 'ack', ack: count};
-            ws.send(JSON.stringify(msg));
-            count = 0;
+           /*
+         if (mode == 'console') {
+            count += data.length;
+            process.stdout.write(typeof(data) === 'string' ? data : new Uint8Array(data));
+            if (count > AckBlkSize) {
+               const msg = {type: 'ack', ack: count};
+               ws.send(JSON.stringify(msg));
+               count = 0;
+            }
          }
+         */
         }
       } else {
-         count += data.length;
-         process.stdout.write(typeof(data) === 'string' ? data : new Uint8Array(data));
-         if (count > AckBlkSize) {
-            const msg = {type: 'ack', ack: count};
-            ws.send(JSON.stringify(msg));
-            count = 0;
+         if (mode == 'console') {
+            count += data.length;
+            process.stdout.write(typeof(data) === 'string' ? data : new Uint8Array(data));
+            if (count > AckBlkSize) {
+               const msg = {type: 'ack', ack: count};
+               ws.send(JSON.stringify(msg));
+               count = 0;
+            }
          }
       }
    });

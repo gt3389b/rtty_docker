@@ -207,7 +207,7 @@ get_sid(args.server_name, args.port, args.rttys_username, args.rttys_password, f
          headers: {
             Cookie: 'sid='+sid
          }
-      });
+      }, null, 'console');
    }
    else {
       process.exit();
