@@ -18,5 +18,16 @@ npm run build
 
 ## Send a command to 
 ```
-% node --no-warnings index.js -s localhost -p 5913 -u admin -w admin command -d "docker_test_client" -c 'ls' -r '["-la"]' -x root  -y root  | jq ".stdout" | tr -d "\"" | base64 -d
+% ./rttys_cli -s localhost -p 5913 -u admin -w admin command -d "docker_test_client" -c 'ls' -r '["-la"]' -x root  -y root  | jq ".stdout" | tr -d "\"" | base64 -d
+```
+
+
+## Receive a file
+```
+% ./rttys_cli -s localhost -p 5913 -u admin -w admin receive -d "docker_test_client" -i '~/TEST2' -o '/tmp'
+```
+
+## Send a file
+```
+% ./rttys_cli -s localhost -p 5913 -u admin -w admin send -d "docker_test_client" -i '/tmp/TEST' -o '/tmp/me'
 ```

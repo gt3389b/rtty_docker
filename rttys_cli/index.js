@@ -167,15 +167,17 @@ parser_command.add_argument('-r', '--params', { help: 'Command params', default:
 // create the parser for the "list" command
 let parser_list = subparsers.add_parser('list', {help:'List available devices'})
 
-// create the parser for the "put_file" command
-let parser_put_file = subparsers.add_parser('put', {help:'Send a file to the device'})
-parser_put_file.add_argument('-d', '--device_id', { help: 'Device ID' });
-parser_put_file.add_argument('-f', '--filename', { help: 'Filename to send' });
+// create the parser for the "send_file" command
+let parser_send_file = subparsers.add_parser('send', {help:'Send a file to the device'})
+parser_send_file.add_argument('-d', '--device_id', { help: 'Device ID' });
+parser_send_file.add_argument('-i', '--input', { help: 'Source' });
+parser_send_file.add_argument('-o', '--output', { help: 'Destination', default:"/tmp" });
 
-// create the parser for the "get_file" command
-let parser_get_file = subparsers.add_parser('get', {help:'Receive a file from the device'})
-parser_get_file.add_argument('-d', '--device_id', { help: 'Device ID' });
-parser_get_file.add_argument('-f', '--filename', { help: 'Filename to send' });
+// create the parser for the "receive_file" command
+let parser_receive_file = subparsers.add_parser('receive', {help:'Receive a file from the device'})
+parser_receive_file.add_argument('-d', '--device_id', { help: 'Device ID' });
+parser_receive_file.add_argument('-i', '--input', { help: 'Source' });
+parser_receive_file.add_argument('-o', '--output', { help: 'Destination', default:"/tmp" });
 
 let parser_connect = subparsers.add_parser('connect', {help:'Connect to a device'})
 parser_connect.add_argument('-d', '--device_id', { help: 'Device ID' });
@@ -201,15 +203,27 @@ get_sid(args.server_name, args.port, args.rttys_username, args.rttys_password, f
    } else if (args['subparser_name'] == 'connect') {
       // got sid, now let's connect
       //const protocol = (location.protocol === 'https:') ? 'wss://' : 'ws://';
-      //const url = "ws://"+args.server_name+":"+args.port+"/connect/"+args.device_id;
       const url = "wss://"+args.server_name+":"+args.port+"/connect/"+args.device_id;
       connect.connect(url, {
          headers: {
             Cookie: 'sid='+sid
          }
-      }, null, 'console');
-   }
-   else {
+      }, null, {'mode':'console', 'destination': '/tmp/'});
+   } else if (args['subparser_name'] == 'receive') {
+      const url = "wss://"+args.server_name+":"+args.port+"/connect/"+args.device_id;
+      connect.connect(url, {
+         headers: {
+            Cookie: 'sid='+sid
+         }
+      }, null, {'mode':'receive', 'source':args.input, 'destination': args.output});
+   } else if (args['subparser_name'] == 'send') {
+      const url = "wss://"+args.server_name+":"+args.port+"/connect/"+args.device_id;
+      connect.connect(url, {
+         headers: {
+            Cookie: 'sid='+sid
+         }
+      }, null, {'mode':'send', 'source': args.input, 'destination': args.output});
+   } else {
       process.exit();
    }
 })
